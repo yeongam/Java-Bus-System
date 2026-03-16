@@ -1,42 +1,46 @@
 package com.bus.timetable.model;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalTime;
 
-/**
- * 버스 시간표 (특정 노선의 출발 시각)
- * TODO: 실제 시간표 데이터에 맞게 필드 추가/수정 필요
- */
 @Entity
 @Table(name = "bus_schedules")
-@Getter @Setter @NoArgsConstructor
 public class BusSchedule {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "route_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "route_id", nullable = false)
     private BusRoute route;
 
-    // 출발 정류장
+    @Column(nullable = false)
     private String departureStop;
 
-    // 출발 시각
+    @Column(nullable = false)
     private LocalTime departureTime;
 
-    // 운행 구분 (평일 / 토요일 / 일요일·공휴일)
     @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private DayType dayType;
 
-    public enum DayType {
-        WEEKDAY,    // 평일
-        SATURDAY,   // 토요일
-        HOLIDAY     // 일요일·공휴일
+    protected BusSchedule() {}
+
+    public BusSchedule(BusRoute route, String departureStop, LocalTime departureTime, DayType dayType) {
+        this.route = route;
+        this.departureStop = departureStop;
+        this.departureTime = departureTime;
+        this.dayType = dayType;
     }
+
+    public Long getId() { return id; }
+    public BusRoute getRoute() { return route; }
+    public String getDepartureStop() { return departureStop; }
+    public LocalTime getDepartureTime() { return departureTime; }
+    public DayType getDayType() { return dayType; }
+
+    public void setDepartureStop(String departureStop) { this.departureStop = departureStop; }
+    public void setDepartureTime(LocalTime departureTime) { this.departureTime = departureTime; }
+    public void setDayType(DayType dayType) { this.dayType = dayType; }
 }

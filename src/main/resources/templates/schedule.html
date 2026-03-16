@@ -10,19 +10,20 @@
 
 <header>
     <a href="/" class="back-link">&larr; 노선 목록</a>
-    <h1>시간표</h1>
+    <h1 th:text="${route.routeNumber} + ' 시간표'">시간표</h1>
+    <p th:text="${route.startStop} + ' → ' + ${route.endStop}"></p>
 </header>
 
 <main>
     <!-- 요일 탭 -->
     <section class="day-tabs">
-        <a th:href="@{/schedule/{id}(id=${routeId}, dayType='WEEKDAY')}"
+        <a th:href="@{/schedule/{id}(id=${route.id}, dayType='WEEKDAY')}"
            th:classappend="${selectedDayType.name() == 'WEEKDAY'} ? ' active'"
            class="tab">평일</a>
-        <a th:href="@{/schedule/{id}(id=${routeId}, dayType='SATURDAY')}"
+        <a th:href="@{/schedule/{id}(id=${route.id}, dayType='SATURDAY')}"
            th:classappend="${selectedDayType.name() == 'SATURDAY'} ? ' active'"
            class="tab">토요일</a>
-        <a th:href="@{/schedule/{id}(id=${routeId}, dayType='HOLIDAY')}"
+        <a th:href="@{/schedule/{id}(id=${route.id}, dayType='HOLIDAY')}"
            th:classappend="${selectedDayType.name() == 'HOLIDAY'} ? ' active'"
            class="tab">일요일·공휴일</a>
     </section>
