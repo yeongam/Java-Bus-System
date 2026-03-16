@@ -31,4 +31,24 @@ public class BusRouteService {
         return busRouteRepository.findByRouteNumber(routeNumber)
                 .orElseThrow(() -> new NoSuchElementException("노선을 찾을 수 없습니다. routeNumber=" + routeNumber));
     }
+
+    @Transactional
+    public BusRoute save(String routeNumber, String startStop, String endStop, String description) {
+        return busRouteRepository.save(new BusRoute(routeNumber, startStop, endStop, description));
+    }
+
+    @Transactional
+    public BusRoute update(Long id, String routeNumber, String startStop, String endStop, String description) {
+        BusRoute route = getRouteById(id);
+        route.setRouteNumber(routeNumber);
+        route.setStartStop(startStop);
+        route.setEndStop(endStop);
+        route.setDescription(description);
+        return busRouteRepository.save(route);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        busRouteRepository.deleteById(id);
+    }
 }

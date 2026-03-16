@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${route != null} ? '노선 수정' : '노선 추가'" >노선 관리</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<header class="admin-header">
+    <div class="admin-header-inner">
+        <div>
+            <span class="admin-badge">관리자</span>
+            <h1 th:text="${route != null} ? '노선 수정' : '노선 추가'">노선 관리</h1>
+        </div>
+        <a th:href="@{/admin}" class="btn btn-outline">← 목록으로</a>
+    </div>
+</header>
+
+<main class="admin-main">
+    <div class="form-card">
+
+        <!-- 추가 폼 -->
+        <form th:if="${route == null}"
+              th:action="@{/admin/routes}" method="post">
+            <div class="form-group">
+                <label for="routeNumber">노선번호 <span class="required">*</span></label>
+                <input type="text" id="routeNumber" name="routeNumber"
+                       placeholder="예) 101, 광역급행1" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startStop">기점 <span class="required">*</span></label>
+                    <input type="text" id="startStop" name="startStop"
+                           placeholder="예) 강남역" required>
+                </div>
+                <div class="form-group">
+                    <label for="endStop">종점 <span class="required">*</span></label>
+                    <input type="text" id="endStop" name="endStop"
+                           placeholder="예) 잠실역" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">설명</label>
+                <input type="text" id="description" name="description"
+                       placeholder="예) 강남~잠실 직행 (선택)">
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/admin}" class="btn btn-outline">취소</a>
+                <button type="submit" class="btn btn-primary">저장</button>
+            </div>
+        </form>
+
+        <!-- 수정 폼 -->
+        <form th:if="${route != null}"
+              th:action="@{/admin/routes/{id}/update(id=${route.id})}" method="post">
+            <div class="form-group">
+                <label for="routeNumber">노선번호 <span class="required">*</span></label>
+                <input type="text" id="routeNumber" name="routeNumber"
+                       th:value="${route.routeNumber}" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startStop">기점 <span class="required">*</span></label>
+                    <input type="text" id="startStop" name="startStop"
+                           th:value="${route.startStop}" required>
+                </div>
+                <div class="form-group">
+                    <label for="endStop">종점 <span class="required">*</span></label>
+                    <input type="text" id="endStop" name="endStop"
+                           th:value="${route.endStop}" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="description">설명</label>
+                <input type="text" id="description" name="description"
+                       th:value="${route.description}">
+            </div>
+            <div class="form-actions">
+                <a th:href="@{/admin}" class="btn btn-outline">취소</a>
+                <button type="submit" class="btn btn-primary">수정 저장</button>
+            </div>
+        </form>
+
+    </div>
+</main>
+
+</body>
+</html>

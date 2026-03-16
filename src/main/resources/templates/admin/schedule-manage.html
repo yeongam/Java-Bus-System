@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${route.routeNumber} + ' 시간표 관리'">시간표 관리</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<header class="admin-header">
+    <div class="admin-header-inner">
+        <div>
+            <span class="admin-badge">관리자</span>
+            <h1>
+                <span th:text="${route.routeNumber}">000</span>번
+                시간표 관리
+            </h1>
+            <p th:text="${route.startStop} + ' → ' + ${route.endStop}" style="opacity:.8;font-size:.9rem;margin-top:4px"></p>
+        </div>
+        <a th:href="@{/admin}" class="btn btn-outline">← 노선 목록</a>
+    </div>
+</header>
+
+<main class="admin-main">
+
+    <!-- 플래시 메시지 -->
+    <div th:if="${message}" class="flash-message" th:text="${message}"></div>
+
+    <!-- 요일 탭 -->
+    <div class="day-tabs admin-tabs">
+        <a th:each="dt : ${dayTypes}"
+           th:href="@{/admin/routes/{id}/schedules(id=${route.id}, dayType=${dt.name()})}"
+           th:text="${dt.label}"
+           th:classappend="${selectedDayType == dt} ? ' active'"
+           class="tab">탭</a>
+    </div>
+
+    <div class="admin-schedule-layout">
+
+        <!-- 왼쪽: 시간표 목록 -->
+        <section class="schedule-list-section">
+            <div class="section-header">
+                <h2>
+                    <span th:text="${selectedDayType.label}">평일</span> 시간표
+                    <span class="badge" th:text="${#lists.size(schedules)}">0</span>
+                </h2>
+            </div>
+
+            <div th:if="${#lists.isEmpty(schedules)}" class="empty-card" style="margin-top:0">
+                <p>등록된 시간표가 없습니다.</p>
+            </div>
+
+            <table th:unless="${#lists.isEmpty(schedules)}" class="admin-table">
+                <thead>
+                    <tr>
+                        <th>출발 정류장</th>
+                        <th>출발 시각</th>
+                        <th>삭제</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${schedules}">
+                        <td th:text="${s.departureStop}">정류장</td>
+                        <td th:text="${#temporals.format(s.departureTime, 'HH:mm')}">00:00</td>
+                        <td>
+                            <form th:action="@{/admin/schedules/{sid}/delete(sid=${s.id})}"
+                                  method="post">
+                                <input type="hidden" name="routeId" th:value="${route.id}">
+                                <input type="hidden" name="dayType" th:value="${selectedDayType.name()}">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('이 시간표를 삭제할까요?')">삭제</button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- 오른쪽: 시간표 추가 폼 -->
+        <section class="schedule-add-section">
+            <h2>시간표 추가</h2>
+            <form th:action="@{/admin/routes/{id}/schedules(id=${route.id})}" method="post" class="add-form">
+                <div class="form-group">
+                    <label>출발 정류장</label>
+                    <input type="text" name="departureStop"
+                           th:placeholder="${route.startStop}"
+                           th:value="${route.startStop}" required>
+                </div>
+                <div class="form-group">
+                    <label>출발 시각</label>
+                    <input type="time" name="departureTime" required>
+                </div>
+                <div class="form-group">
+                    <label>요일 구분</label>
+                    <select name="dayType">
+                        <option th:each="dt : ${dayTypes}"
+                                th:value="${dt.name()}"
+                                th:text="${dt.label}"
+                                th:selected="${selectedDayType == dt}">평일</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%">추가</button>
+            </form>
+        </section>
+
+    </div>
+</main>
+
+</body>
+</html>
