@@ -12,4 +12,8 @@ public interface BusScheduleRepository extends JpaRepository<BusSchedule, Long> 
     List<BusSchedule> findByRouteIdAndDayTypeOrderByDepartureTime(Long routeId, DayType dayType);
 
     void deleteByRouteId(Long routeId);
+
+    long countByRouteId(Long routeId);
+
+    long countByDayType(DayType dayType);
 }

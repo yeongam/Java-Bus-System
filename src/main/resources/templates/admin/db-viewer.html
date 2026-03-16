@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DB 뷰어 - 버스 시간표</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body>
+
+<header class="admin-header">
+    <div class="admin-header-inner">
+        <div>
+            <span class="admin-badge">관리자</span>
+            <h1>DB 뷰어</h1>
+            <p style="opacity:.8;font-size:.9rem;margin-top:4px">데이터베이스 현황을 시각적으로 확인합니다.</p>
+        </div>
+        <nav class="admin-nav">
+            <a th:href="@{/admin}" class="btn btn-outline">← 대시보드</a>
+            <form th:action="@{/admin/logout}" method="post" style="display:inline">
+                <button type="submit" class="btn btn-logout">로그아웃</button>
+            </form>
+        </nav>
+    </div>
+</header>
+
+<main class="admin-main">
+
+    <!-- ── 요약 통계 카드 ── -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value" th:text="${#lists.size(routes)}">0</div>
+            <div class="stat-label">전체 노선</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value" th:text="${totalSchedules}">0</div>
+            <div class="stat-label">전체 시간표</div>
+        </div>
+        <div th:each="entry : ${countByDayType}" class="stat-card">
+            <div class="stat-value" th:text="${entry.value}">0</div>
+            <div class="stat-label" th:text="${entry.key}">평일</div>
+        </div>
+    </div>
+
+    <!-- ── 노선별 시간표 현황 ── -->
+    <div class="section-header" style="margin-top:32px">
+        <h2>노선별 시간표 현황</h2>
+    </div>
+
+    <div th:if="${#lists.isEmpty(routes)}" class="empty-card">
+        <p>등록된 노선이 없습니다.</p>
+    </div>
+
+    <table th:unless="${#lists.isEmpty(routes)}" class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>노선번호</th>
+                <th>기점</th>
+                <th>종점</th>
+                <th>설명</th>
+                <th>시간표 수</th>
+                <th>바로가기</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="route : ${routes}">
+                <td th:text="${route.id}" style="color:#aaa;font-size:.85rem">1</td>
+                <td><strong th:text="${route.routeNumber}" class="route-num-cell">000</strong></td>
+                <td th:text="${route.startStop}">기점</td>
+                <td th:text="${route.endStop}">종점</td>
+                <td th:text="${route.description}" class="desc-cell">설명</td>
+                <td>
+                    <span class="schedule-count-badge"
+                          th:text="${countByRoute[route.id]} + '개'">0개</span>
+                </td>
+                <td>
+                    <a th:href="@{/admin/routes/{id}/schedules(id=${route.id})}"
+                       class="btn btn-sm btn-outline-dark">시간표 관리</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ── 요일별 시간표 분포 ── -->
+    <div class="section-header" style="margin-top:40px">
+        <h2>요일별 시간표 분포</h2>
+    </div>
+
+    <div class="daytype-bars">
+        <div th:each="entry : ${countByDayType}" class="bar-row">
+            <div class="bar-label" th:text="${entry.key}">평일</div>
+            <div class="bar-track">
+                <div class="bar-fill"
+                     th:style="'width:' + (${totalSchedules} > 0 ? ${entry.value * 100 / totalSchedules} : 0) + '%'">
+                </div>
+            </div>
+            <div class="bar-value" th:text="${entry.value} + '개'">0개</div>
+        </div>
+    </div>
+
+    <p style="margin-top:24px;color:#aaa;font-size:.85rem">
+        * DB 파일 위치: <code>data/busdb.db</code> —
+        <a href="https://sqlitebrowser.org/" target="_blank" style="color:#1a73e8">DB Browser for SQLite</a>로 열면 데이터를 직접 편집할 수 있습니다.
+    </p>
+
+</main>
+
+</body>
+</html>

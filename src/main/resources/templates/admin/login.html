@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 인증</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" th:href="@{/css/admin.css}">
+</head>
+<body class="login-body">
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-logo">
+            <span class="admin-badge">BETA</span>
+            <h1>관리자 인증</h1>
+            <p>인증키를 입력해 주세요.</p>
+        </div>
+
+        <div th:if="${error}" class="login-error" th:text="${error}"></div>
+
+        <form th:action="@{/admin/login}" method="post" class="login-form">
+            <div class="form-group">
+                <label for="key">인증키</label>
+                <input type="password" id="key" name="key"
+                       placeholder="인증키 입력" autocomplete="off" autofocus required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;padding:12px">
+                입장
+            </button>
+        </form>
+
+        <div class="login-footer">
+            <a th:href="@{/}">← 사용자 화면으로 돌아가기</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

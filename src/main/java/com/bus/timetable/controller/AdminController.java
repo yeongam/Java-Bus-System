@@ -3,6 +3,7 @@ package com.bus.timetable.controller;
 import com.bus.timetable.model.BusRoute;
 import com.bus.timetable.model.BusSchedule;
 import com.bus.timetable.model.DayType;
+import com.bus.timetable.repository.BusScheduleRepository;
 import com.bus.timetable.service.BusRouteService;
 import com.bus.timetable.service.BusScheduleService;
 import org.springframework.stereotype.Controller;
@@ -11,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalTime;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/admin")
@@ -18,10 +22,14 @@ public class AdminController {
 
     private final BusRouteService routeService;
     private final BusScheduleService scheduleService;
+    private final BusScheduleRepository scheduleRepository;
 
-    public AdminController(BusRouteService routeService, BusScheduleService scheduleService) {
+    public AdminController(BusRouteService routeService,
+                           BusScheduleService scheduleService,
+                           BusScheduleRepository scheduleRepository) {
         this.routeService = routeService;
         this.scheduleService = scheduleService;
+        this.scheduleRepository = scheduleRepository;
     }
 
     // ── 대시보드 ──────────────────────────────────────────────
@@ -77,7 +85,7 @@ public class AdminController {
     @PostMapping("/routes/{id}/delete")
     public String deleteRoute(@PathVariable Long id, RedirectAttributes ra) {
         BusRoute route = routeService.getRouteById(id);
-        scheduleService.deleteAllByRouteId(id);  // 시간표 먼저 삭제
+        scheduleService.deleteAllByRouteId(id);
         routeService.delete(id);
         ra.addFlashAttribute("message", "'" + route.getRouteNumber() + "' 노선이 삭제되었습니다.");
         return "redirect:/admin";
@@ -96,7 +104,7 @@ public class AdminController {
         return "admin/schedule-manage";
     }
 
-    // ── 시간표 추가 ───────────────────────────────────────────
+    // ── 시간표 추가 (1건) ─────────────────────────────────────
     @PostMapping("/routes/{id}/schedules")
     public String addSchedule(
             @PathVariable Long id,
@@ -105,10 +113,33 @@ public class AdminController {
             @RequestParam DayType dayType,
             RedirectAttributes ra) {
         BusRoute route = routeService.getRouteById(id);
-        BusSchedule schedule = new BusSchedule(route, departureStop.trim(),
-                LocalTime.parse(departureTime), dayType);
-        scheduleService.save(schedule);
+        scheduleService.save(new BusSchedule(route, departureStop.trim(),
+                LocalTime.parse(departureTime), dayType));
         ra.addFlashAttribute("message", dayType.getLabel() + " " + departureTime + " 시간표가 추가되었습니다.");
+        return "redirect:/admin/routes/" + id + "/schedules?dayType=" + dayType;
+    }
+
+    // ── 시간표 일괄 추가 (시작~종료, 배차 간격) ───────────────
+    @PostMapping("/routes/{id}/schedules/bulk")
+    public String addBulkSchedules(
+            @PathVariable Long id,
+            @RequestParam String departureStop,
+            @RequestParam String startTime,
+            @RequestParam String endTime,
+            @RequestParam int intervalMinutes,
+            @RequestParam DayType dayType,
+            RedirectAttributes ra) {
+        BusRoute route = routeService.getRouteById(id);
+        LocalTime current = LocalTime.parse(startTime);
+        LocalTime end = LocalTime.parse(endTime);
+        int count = 0;
+        while (!current.isAfter(end)) {
+            scheduleService.save(new BusSchedule(route, departureStop.trim(), current, dayType));
+            current = current.plusMinutes(intervalMinutes);
+            count++;
+        }
+        ra.addFlashAttribute("message",
+                dayType.getLabel() + " " + count + "개 시간표가 일괄 추가되었습니다.");
         return "redirect:/admin/routes/" + id + "/schedules?dayType=" + dayType;
     }
 
@@ -122,5 +153,31 @@ public class AdminController {
         scheduleService.delete(scheduleId);
         ra.addFlashAttribute("message", "시간표가 삭제되었습니다.");
         return "redirect:/admin/routes/" + routeId + "/schedules?dayType=" + dayType;
+    }
+
+    // ── DB 시각화 뷰어 ────────────────��───────────────────────
+    @GetMapping("/db")
+    public String dbViewer(Model model) {
+        List<BusRoute> routes = routeService.getAllRoutes();
+
+        // 노선별 시간표 수
+        Map<Long, Long> countByRoute = new LinkedHashMap<>();
+        for (BusRoute r : routes) {
+            countByRoute.put(r.getId(), scheduleRepository.countByRouteId(r.getId()));
+        }
+
+        // 요일별 시간표 수
+        Map<String, Long> countByDayType = new LinkedHashMap<>();
+        for (DayType dt : DayType.values()) {
+            countByDayType.put(dt.getLabel(), scheduleRepository.countByDayType(dt));
+        }
+
+        long totalSchedules = countByDayType.values().stream().mapToLong(Long::longValue).sum();
+
+        model.addAttribute("routes", routes);
+        model.addAttribute("countByRoute", countByRoute);
+        model.addAttribute("countByDayType", countByDayType);
+        model.addAttribute("totalSchedules", totalSchedules);
+        return "admin/db-viewer";
     }
 }

@@ -51,4 +51,9 @@ public class BusRouteService {
     public void delete(Long id) {
         busRouteRepository.deleteById(id);
     }
+
+    public List<BusRoute> search(String q) {
+        if (q == null || q.isBlank()) return getAllRoutes();
+        return busRouteRepository.search(q.trim());
+    }
 }

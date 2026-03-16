@@ -15,28 +15,30 @@
             <span class="admin-badge">관리자</span>
             <h1>버스 시간표 관리</h1>
         </div>
-        <a th:href="@{/}" class="btn btn-outline" target="_blank">사용자 화면 보기 ↗</a>
+        <nav class="admin-nav">
+            <a th:href="@{/admin/db}" class="btn btn-outline">DB 뷰어</a>
+            <a th:href="@{/}" class="btn btn-outline" target="_blank">사용자 화면 ↗</a>
+            <form th:action="@{/admin/logout}" method="post" style="display:inline">
+                <button type="submit" class="btn btn-logout">로그아웃</button>
+            </form>
+        </nav>
     </div>
 </header>
 
 <main class="admin-main">
 
-    <!-- 플래시 메시지 -->
     <div th:if="${message}" class="flash-message" th:text="${message}"></div>
 
-    <!-- 상단 액션 -->
     <div class="section-header">
         <h2>노선 목록 <span class="badge" th:text="${#lists.size(routes)}">0</span></h2>
         <a th:href="@{/admin/routes/new}" class="btn btn-primary">+ 노선 추가</a>
     </div>
 
-    <!-- 노선이 없을 때 -->
     <div th:if="${#lists.isEmpty(routes)}" class="empty-card">
         <p>등록된 노선이 없습니다.</p>
         <a th:href="@{/admin/routes/new}" class="btn btn-primary" style="margin-top:12px">첫 노선 추가하기</a>
     </div>
 
-    <!-- 노선 테이블 -->
     <table th:unless="${#lists.isEmpty(routes)}" class="admin-table">
         <thead>
             <tr>
@@ -56,7 +58,7 @@
                 <td th:text="${route.description}" class="desc-cell">설명</td>
                 <td>
                     <a th:href="@{/admin/routes/{id}/schedules(id=${route.id})}"
-                       class="btn btn-sm btn-outline">시간표 관리</a>
+                       class="btn btn-sm btn-outline-dark">시간표 관리</a>
                 </td>
                 <td class="action-cell">
                     <a th:href="@{/admin/routes/{id}/edit(id=${route.id})}"

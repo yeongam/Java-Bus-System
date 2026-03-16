@@ -13,19 +13,21 @@
     <div class="admin-header-inner">
         <div>
             <span class="admin-badge">관리자</span>
-            <h1>
-                <span th:text="${route.routeNumber}">000</span>번
-                시간표 관리
-            </h1>
-            <p th:text="${route.startStop} + ' → ' + ${route.endStop}" style="opacity:.8;font-size:.9rem;margin-top:4px"></p>
+            <h1><span th:text="${route.routeNumber}">000</span>번 시간표 관리</h1>
+            <p th:text="${route.startStop} + ' → ' + ${route.endStop}"
+               style="opacity:.8;font-size:.9rem;margin-top:4px"></p>
         </div>
-        <a th:href="@{/admin}" class="btn btn-outline">← 노선 목록</a>
+        <nav class="admin-nav">
+            <a th:href="@{/admin}" class="btn btn-outline">← 노선 목록</a>
+            <form th:action="@{/admin/logout}" method="post" style="display:inline">
+                <button type="submit" class="btn btn-logout">로그아웃</button>
+            </form>
+        </nav>
     </div>
 </header>
 
 <main class="admin-main">
 
-    <!-- 플래시 메시지 -->
     <div th:if="${message}" class="flash-message" th:text="${message}"></div>
 
     <!-- 요일 탭 -->
@@ -65,10 +67,9 @@
                         <td th:text="${s.departureStop}">정류장</td>
                         <td th:text="${#temporals.format(s.departureTime, 'HH:mm')}">00:00</td>
                         <td>
-                            <form th:action="@{/admin/schedules/{sid}/delete(sid=${s.id})}"
-                                  method="post">
-                                <input type="hidden" name="routeId" th:value="${route.id}">
-                                <input type="hidden" name="dayType" th:value="${selectedDayType.name()}">
+                            <form th:action="@{/admin/schedules/{sid}/delete(sid=${s.id})}" method="post">
+                                <input type="hidden" name="routeId"  th:value="${route.id}">
+                                <input type="hidden" name="dayType"  th:value="${selectedDayType.name()}">
                                 <button type="submit" class="btn btn-sm btn-danger"
                                         onclick="return confirm('이 시간표를 삭제할까요?')">삭제</button>
                             </form>
@@ -78,8 +79,10 @@
             </table>
         </section>
 
-        <!-- 오른쪽: 시간표 추가 폼 -->
-        <section class="schedule-add-section">
+        <!-- 오른쪽: 추가 패널 -->
+        <aside class="schedule-add-section">
+
+            <!-- 단건 추가 -->
             <h2>시간표 추가</h2>
             <form th:action="@{/admin/routes/{id}/schedules(id=${route.id})}" method="post" class="add-form">
                 <div class="form-group">
@@ -103,8 +106,46 @@
                 </div>
                 <button type="submit" class="btn btn-primary" style="width:100%">추가</button>
             </form>
-        </section>
 
+            <hr class="divider">
+
+            <!-- 일괄 추가 -->
+            <h2>일괄 추가 <small style="font-size:.8rem;color:#888">(시작~종료, 배차 간격)</small></h2>
+            <form th:action="@{/admin/routes/{id}/schedules/bulk(id=${route.id})}" method="post" class="add-form">
+                <div class="form-group">
+                    <label>출발 정류장</label>
+                    <input type="text" name="departureStop"
+                           th:placeholder="${route.startStop}"
+                           th:value="${route.startStop}" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>시작 시각</label>
+                        <input type="time" name="startTime" value="06:00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>종료 시각</label>
+                        <input type="time" name="endTime" value="22:00" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>배차 간격 (분)</label>
+                    <input type="number" name="intervalMinutes" value="30" min="1" max="240" required>
+                </div>
+                <div class="form-group">
+                    <label>요일 구분</label>
+                    <select name="dayType">
+                        <option th:each="dt : ${dayTypes}"
+                                th:value="${dt.name()}"
+                                th:text="${dt.label}"
+                                th:selected="${selectedDayType == dt}">평일</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width:100%"
+                        onclick="return confirm('해당 시간대에 시간표를 일괄 추가합니다.')">일괄 추가</button>
+            </form>
+
+        </aside>
     </div>
 </main>
 
